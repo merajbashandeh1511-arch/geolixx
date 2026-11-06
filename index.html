@@ -1,0 +1,462 @@
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1769e0">
+<title>ژئولیکس | ریاضی هشتم</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#f4f7fc;color:#17243b;
+ font-family:Tahoma,Arial,sans-serif
+}
+header{
+ background:linear-gradient(120deg,#1769e0,#1046a5);
+ color:white;padding:22px 6%;border-radius:0 0 25px 25px
+}
+.logo{font-size:25px;font-weight:bold}
+header p{opacity:.9}
+main{max-width:950px;margin:25px auto;padding:0 15px}
+.card{
+ background:white;border-radius:18px;padding:22px;
+ margin:15px 0;box-shadow:0 5px 20px #17365d0c
+}
+h2{font-size:21px}
+h3{font-size:17px}
+button{
+ border:0;border-radius:12px;padding:13px 18px;
+ background:#1769e0;color:white;font-size:15px;
+ cursor:pointer;margin:5px;font-family:inherit
+}
+button:hover{background:#104cae}
+button.secondary{background:#eaf1ff;color:#1769e0}
+button.red{background:#e94b54}
+input,select{
+ width:100%;padding:13px;border:1px solid #dce4f0;
+ border-radius:10px;font-family:inherit;font-size:15px;
+ margin:9px 0
+}
+.option{
+ display:block;background:#f3f6fc;padding:13px;
+ border-radius:10px;margin:9px 0;cursor:pointer
+}
+.option input{width:auto;margin-left:8px}
+.grid{
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+ gap:12px
+}
+.chapter{
+ border:1px solid #e3eaf5;border-radius:14px;
+ padding:16px;background:#fff
+}
+.chapter strong{color:#1769e0}
+.muted{color:#718096;font-size:13px}
+.progress{height:9px;background:#e7edf6;border-radius:10px;overflow:hidden}
+.progress div{height:100%;background:#1769e0;width:0}
+.answer{
+ display:block;width:100%;text-align:right;
+ background:#f1f5fb;color:#17243b;margin:8px 0
+}
+.answer:hover{background:#dce9ff}
+.correct{background:#d8f6e5!important;color:#08783d!important}
+.wrong{background:#ffe0e2!important;color:#b51f30!important}
+.hidden{display:none}
+.stat{
+ background:#f1f6ff;border-radius:12px;padding:15px;text-align:center
+}
+.stat b{font-size:24px;color:#1769e0;display:block}
+footer{text-align:center;padding:25px;color:#8190a5;font-size:12px}
+</style>
+</head>
+
+<body>
+
+<header>
+ <div class="logo">⬡ ژئولیکس</div>
+ <p>هوشمندانه یاد بگیر، قدرتمندانه پیشرفت کن!</p>
+</header>
+
+<main>
+
+<section id="welcome" class="card">
+ <h2>به ژئولیکس خوش آمدی! 👋</h2>
+ <p>برای شروع، چند سؤال کوتاه ازت می‌پرسیم.</p>
+ <div class="progress"><div id="onProgress"></div></div>
+ <h3 id="questionTitle"></h3>
+ <div id="questionBody"></div>
+ <button onclick="nextStep()" id="nextBtn">مرحله بعد</button>
+</section>
+
+<section id="home" class="hidden">
+ <div class="card">
+  <h2 id="greeting">سلام!</h2>
+  <p id="profileInfo" class="muted"></p>
+  <button class="secondary" onclick="showSchedule()">برنامه مطالعاتی من</button>
+  <button class="secondary" onclick="editProfile()">ویرایش اطلاعات</button>
+ </div>
+
+ <div class="card">
+  <h3>آمار یادگیری من</h3>
+  <div class="grid">
+   <div class="stat"><b id="totalTests">۰</b>آزمون انجام‌شده</div>
+   <div class="stat"><b id="totalCorrect">۰</b>پاسخ صحیح</div>
+   <div class="stat"><b id="average">۰٪</b>میانگین آزمون‌ها</div>
+  </div>
+ </div>
+
+ <div class="card">
+  <h2>📚 فصل‌های ریاضی هشتم</h2>
+  <p class="muted">یک فصل را انتخاب کن و یادگیری را شروع کن.</p>
+  <div class="grid" id="chapters"></div>
+ </div>
+</section>
+
+<section id="lesson" class="hidden card">
+ <button class="secondary" onclick="goHome()">← بازگشت</button>
+ <h2 id="lessonTitle"></h2>
+ <div id="lessonText"></div>
+ <button onclick="startQuiz()">شروع آزمون فصل</button>
+</section>
+
+<section id="quiz" class="hidden card">
+ <button class="secondary" onclick="goHome()">خروج از آزمون</button>
+ <h3 id="quizTitle"></h3>
+ <div class="progress"><div id="quizProgress"></div></div>
+ <p id="questionNumber" class="muted"></p>
+ <h2 id="quizQuestion"></h2>
+ <div id="answers"></div>
+ <button id="nextQuestion" onclick="nextQuestion()" disabled>سؤال بعدی</button>
+</section>
+
+<section id="result" class="hidden card">
+ <h2>نتیجه آزمون 🎉</h2>
+ <div class="grid">
+  <div class="stat"><b id="rightCount">۰</b>درست</div>
+  <div class="stat"><b id="wrongCount">۰</b>غلط</div>
+  <div class="stat"><b id="emptyCount">۰</b>نزده</div>
+ </div>
+ <h2 id="scoreText"></h2>
+ <div id="review"></div>
+ <button onclick="goHome()">بازگشت به خانه</button>
+</section>
+
+<section id="schedule" class="hidden card">
+ <button class="secondary" onclick="goHome()">← بازگشت</button>
+ <h2>برنامه مطالعاتی من</h2>
+ <div id="scheduleText"></div>
+ <h3>ویرایش برنامه</h3>
+ <label>مدت مطالعه روزانه</label>
+ <select id="dailyEdit">
+  <option>کمتر از ۱ ساعت</option>
+  <option>۱ تا ۲ ساعت</option>
+  <option>۲ تا ۳ ساعت</option>
+  <option>بیشتر از ۳ ساعت</option>
+ </select>
+ <label>مدت مطالعه ریاضی</label>
+ <select id="mathEdit">
+  <option>۱۵ تا ۳۰ دقیقه</option>
+  <option>۳۰ تا ۶۰ دقیقه</option>
+  <option>۱ تا ۲ ساعت</option>
+  <option>بیشتر از ۲ ساعت</option>
+ </select>
+ <label>ساعت شروع ریاضی</label>
+ <input type="time" id="timeEdit">
+ <button onclick="saveSchedule()">ذخیره برنامه</button>
+</section>
+
+</main>
+
+<footer>GEOLIX · ژئولیکس | همراه یادگیری ریاضی هشتم</footer>
+
+<script>
+const chapters=[
+"عددهای صحیح و گویا",
+"عددهای اول",
+"چندضلعی‌ها",
+"جبر و معادله",
+"بردار و مختصات",
+"مثلث",
+"توان و جذر",
+"آمار و احتمال",
+"دایره"
+];
+
+const lessons=[
+"در این فصل با عددهای صحیح و گویا آشنا می‌شوی. عددهای گویا را می‌توان به شکل کسر نوشت. برای مقایسه کسرها می‌توان مخرج مشترک گرفت.",
+"عدد اول عددی طبیعی بزرگ‌تر از ۱ است که فقط دو شمارنده مثبت دارد: ۱ و خودش. عددهایی مانند ۲، ۳، ۵ و ۷ اول هستند.",
+"چندضلعی یک شکل بسته است که از پاره‌خط‌ها تشکیل شده است. مجموع زاویه‌های داخلی یک n ضلعی برابر با (n−2)×180 درجه است.",
+"در جبر از حروف برای نشان دادن عددهای نامعلوم استفاده می‌کنیم. برای حل معادله باید مقدار مجهول را پیدا کنیم.",
+"بردار دارای اندازه و جهت است. در دستگاه مختصات، هر نقطه با یک زوج مرتب مانند (۲،۳) مشخص می‌شود.",
+"مثلث سه ضلع و سه زاویه دارد. مجموع زاویه‌های داخلی هر مثلث ۱۸۰ درجه است.",
+"توان راهی کوتاه برای نمایش ضرب تکراری است. جذر عددی است که اگر در خودش ضرب شود، عدد موردنظر به دست می‌آید.",
+"آمار به جمع‌آوری و بررسی داده‌ها می‌پردازد. میانگین از تقسیم مجموع داده‌ها بر تعداد آن‌ها به دست می‌آید.",
+"دایره مجموعه نقاطی است که فاصله آن‌ها از یک نقطه ثابت به نام مرکز برابر است. قطر دو برابر شعاع است."
+];
+
+let profile=JSON.parse(localStorage.getItem("geolixProfile")||"null");
+let stats=JSON.parse(localStorage.getItem("geolixStats")||'{"tests":0,"correct":0,"scores":[]}');
+let step=0,answersProfile={},currentChapter=0,questions=[],qIndex=0,userAnswers=[];
+
+const steps=[
+ {title:"اسمت چیه؟",type:"text",key:"name",placeholder:"نامت را وارد کن"},
+ {title:"چه شخصیتی داری؟",key:"personality",options:["کنجکاو و پرسشگر","آرام و دقیق","پرانرژی و پرتحرک","خلاق و ایده‌پرداز","منظم و برنامه‌دوست","صبور و پیگیر"]},
+ {title:"نظرت درباره ریاضی چیه؟",key:"mathFeeling",options:["خیلی دوستش دارم","گاهی برام جذابه","هنوز باهاش راحت نیستم","می‌خوام بهش علاقه‌مند بشم"]},
+ {title:"از چه درسی بیشتر خوشت میاد؟",key:"favorite",options:["علوم","فارسی","زبان انگلیسی","مطالعات اجتماعی","هنر","کامپیوتر و فناوری","ریاضی","درس‌های دیگر"]},
+ {title:"روزانه چقدر درس می‌خونی؟",key:"daily",options:["کمتر از ۱ ساعت","۱ تا ۲ ساعت","۲ تا ۳ ساعت","بیشتر از ۳ ساعت"]},
+ {title:"روزانه چقدر ریاضی می‌خونی؟",key:"mathTime",options:["۱۵ تا ۳۰ دقیقه","۳۰ تا ۶۰ دقیقه","۱ تا ۲ ساعت","بیشتر از ۲ ساعت"]},
+ {title:"از چه ساعتی ریاضی می‌خونی؟",key:"startTime",type:"time"}
+];
+
+function renderStep(){
+ let s=steps[step];
+ document.getElementById("questionTitle").textContent=s.title;
+ document.getElementById("onProgress").style.width=((step+1)/steps.length*100)+"%";
+ let body=document.getElementById("questionBody");
+ if(s.type==="text"||s.type==="time"){
+  body.innerHTML=`<input id="stepInput" type="${s.type}" placeholder="${s.placeholder||""}" value="${answersProfile[s.key]||""}">`;
+ }else{
+  body.innerHTML=s.options.map(x=>`
+   <label class="option"><input type="radio" name="choice" value="${x}" ${answersProfile[s.key]===x?"checked":""}>${x}</label>
+  `).join("");
+ }
+ document.getElementById("nextBtn").textContent=step===steps.length-1?"اتمام ثبت‌نام":"مرحله بعد";
+}
+
+function nextStep(){
+ let s=steps[step],value;
+ if(s.type==="text"||s.type==="time"){
+  value=document.getElementById("stepInput").value.trim();
+ }else{
+  value=document.querySelector('input[name="choice"]:checked')?.value;
+ }
+ if(!value){alert("لطفاً پاسخ بده.");return}
+ answersProfile[s.key]=value;
+ step++;
+ if(step<steps.length)renderStep();
+ else{
+  profile=answersProfile;
+  localStorage.setItem("geolixProfile",JSON.stringify(profile));
+  showHome();
+ }
+}
+function showHome(){
+ hideAll();document.getElementById("home").classList.remove("hidden");
+ document.getElementById("greeting").textContent="سلام "+profile.name+" عزیز! 👋";
+ document.getElementById("profileInfo").textContent=
+ "شخصیت: "+profile.personality+" | علاقه: "+profile.mathFeeling;
+ document.getElementById("totalTests").textContent=stats.tests;
+ document.getElementById("totalCorrect").textContent=stats.correct;
+ let avg=stats.scores.length?Math.round(stats.scores.reduce((a,b)=>a+b,0)/stats.scores.length):0;
+ document.getElementById("average").textContent=avg+"٪";
+ renderChapters();
+}
+function renderChapters(){
+ document.getElementById("chapters").innerHTML=chapters.map((c,i)=>`
+ <div class="chapter">
+  <strong>فصل ${i+1}</strong>
+  <h3>${c}</h3>
+  <button onclick="openLesson(${i})">مشاهده آموزش</button>
+ </div>`).join("");
+}
+function openLesson(i){
+ currentChapter=i;hideAll();
+ document.getElementById("lesson").classList.remove("hidden");
+ document.getElementById("lessonTitle").textContent="فصل "+(i+1)+" : "+chapters[i];
+ document.getElementById("lessonText").innerHTML=`
+ <div class="card">${lessons[i]}</div>
+ <h3>نکته مهم ⭐</h3>
+ <p>${getTip(i)}</p>
+ <h3>مثال آموزشی</h3>
+ <p>${getExample(i)}</p>`;
+}
+function getTip(i){
+ return [
+ "در محاسبات، به علامت عددها توجه کن.",
+ "عدد ۲ تنها عدد اول زوج است.",
+ "مجموع زاویه‌های داخلی چندضلعی را فراموش نکن.",
+ "برای حل معادله، دو طرف آن را به یک شکل تغییر بده.",
+ "ترتیب مؤلفه‌های مختصات مهم است.",
+ "مجموع زاویه‌های مثلث همیشه ۱۸۰ درجه است.",
+ "توان و جذر عملیات مرتبط با یکدیگرند.",
+ "میانگین برابر مجموع داده‌ها تقسیم بر تعداد آن‌هاست.",
+ "قطر دایره از مرکز عبور می‌کند."
+ ][i];
+}
+function getExample(i){
+ return [
+ "مثلاً: ۳− + ۷ = ۴",
+ "عدد ۱۳ اول است، چون فقط بر ۱ و ۱۳ بخش‌پذیر است.",
+ "مجموع زاویه‌های داخلی چهارضلعی ۳۶۰ درجه است.",
+ "اگر x+5=12 باشد، آنگاه x=7 است.",
+ "نقطه (۲،۳) یعنی ۲ واحد در راستای افقی و ۳ واحد در راستای عمودی.",
+ "اگر دو زاویه مثلث ۶۰ و ۷۰ باشند، زاویه سوم ۵۰ درجه است.",
+ "۳ به توان ۲ برابر ۹ و جذر ۹ برابر ۳ است.",
+ "میانگین ۲، ۴ و ۶ برابر ۴ است.",
+ "اگر شعاع ۵ باشد، قطر ۱۰ است."
+ ][i];
+}
+
+// ساخت سؤال‌های متنوع
+function generateQuestions(ch){
+ let list=[];
+ for(let i=0;i<10;i++){
+  let a,b,question,correct,explanation;
+  if(ch===0){
+   a=Math.floor(Math.random()*15)+1;b=Math.floor(Math.random()*15)+1;
+   let op=i%4;
+   if(op===0){question=`حاصل ${a}+(${b*-1}) چیست؟`;correct=a-b;}
+   if(op===1){question=`حاصل ${a-b} + ${b} چیست؟`;correct=a;}
+   if(op===2){question=`حاصل ${a} × ${b*-1} چیست؟`;correct=-a*b;}
+   if(op===3){question=`حاصل ${a+b} − ${a} چیست؟`;correct=b;}
+   explanation="با انجام عملیات و توجه به علامت‌ها، پاسخ به دست می‌آید.";
+  }else if(ch===1){
+   a=Math.floor(Math.random()*20)+2;
+   let prime=[2,3,5,7,11,13,17,19,23,29];
+   correct=prime[Math.floor(Math.random()*prime.length)];
+   question="کدام گزینه یک عدد اول است؟";
+   explanation="عدد اول فقط دو شمارنده مثبت دارد.";
+   if(i%2===0)correct=7;
+  }else if(ch===2){
+   a=[3,4,5,6,7][i%5];
+   correct=(a-2)*180;
+   question=`مجموع زاویه‌های داخلی یک ${a} ضلعی چند درجه است؟`;
+   explanation="فرمول مجموع زاویه‌ها برابر (n−2)×۱۸۰ است.";
+  }else if(ch===3){
+   a=Math.floor(Math.random()*15)+2;b=Math.floor(Math.random()*15)+1;
+   correct=a;
+   question=`اگر x + ${b} = ${a+b} باشد، مقدار x چیست؟`;
+   explanation="عدد ثابت را از دو طرف معادله کم می‌کنیم.";
+  }else if(ch===4){
+   a=Math.floor(Math.random()*8)+1;b=Math.floor(Math.random()*8)+1;
+   correct=a+b;
+   question=`نقطه‌ای با مختصات (${a}،${b}) چند مؤلفه دارد؟`;
+   correct=2;
+   explanation="هر نقطه در صفحه مختصات با دو مؤلفه مشخص می‌شود.";
+  }else if(ch===5){
+   a= Math.floor(Math.random()*80)+20;
+   b= Math.floor(Math.random()*80)+20;
+   correct=180-a-b;
+   question=`دو زاویه مثلث ${a} و ${b} درجه هستند. زاویه سوم چند درجه است؟`;
+   explanation="مجموع زاویه‌های داخلی مثلث ۱۸۰ درجه است.";
+  }else if(ch===6){
+   a=Math.floor(Math.random()*9)+2;
+   correct=a*a;
+   question=`حاصل ${a} به توان ۲ چیست؟`;
+   explanation="توان ۲ یعنی عدد در خودش ضرب شود.";
+  }else if(ch===7){
+   a=Math.floor(Math.random()*8)+1;
+   correct=a*2;
+   question=`میانگین دو عدد ${a} و ${a*3} چقدر است؟`;
+   explanation="مجموع داده‌ها را بر تعداد آن‌ها تقسیم می‌کنیم.";
+  }else{
+   a=Math.floor(Math.random()*9)+2;
+   correct=a*2;
+   question=`اگر شعاع دایره ${a} باشد، قطر آن چند است؟`;
+   explanation="قطر دو برابر شعاع است.";
+  }
+  let choices=new Set([correct]);
+  while(choices.size<4){
+   let offset=Math.floor(Math.random()*11)-5;
+   if(offset!==0)choices.add(correct+offset);
+  }
+  let opts=[...choices].sort(()=>Math.random()-.5);
+  list.push({question,correct,opts,explanation});
+ }
+ return list;
+}
+
+function startQuiz(){
+ questions=generateQuestions(currentChapter);
+ qIndex=0;userAnswers=Array(10).fill(null);
+ hideAll();document.getElementById("quiz").classList.remove("hidden");
+ document.getElementById("quizTitle").textContent="آزمون فصل "+(currentChapter+1);
+ showQuestion();
+}
+function showQuestion(){
+ let q=questions[qIndex];
+ document.getElementById("questionNumber").textContent=`سؤال ${qIndex+1} از ۱۰`;
+ document.getElementById("quizProgress").style.width=((qIndex+1)*10)+"%";
+ document.getElementById("quizQuestion").textContent=q.question;
+ document.getElementById("nextQuestion").disabled=true;
+ document.getElementById("nextQuestion").textContent=qIndex===9?"دیدن نتیجه":"سؤال بعدی";
+ document.getElementById("answers").innerHTML=q.opts.map(o=>
+ `<button class="answer" onclick="chooseAnswer(${o},this)">${o}</button>`
+ ).join("");
+}
+function chooseAnswer(value,btn){
+ if(userAnswers[qIndex]!==null)return;
+ userAnswers[qIndex]=value;
+ let q=questions[qIndex];
+ document.querySelectorAll(".answer").forEach(b=>{
+  let v=Number(b.textContent);
+  if(v===q.correct)b.classList.add("correct");
+  else if(v===value)b.classList.add("wrong");
+ });
+ document.getElementById("nextQuestion").disabled=false;
+}
+function nextQuestion(){
+ if(qIndex<9){qIndex++;showQuestion();}
+ else showResult();
+}
+function showResult(){
+ hideAll();document.getElementById("result").classList.remove("hidden");
+ let right=0,wrong=0,empty=0;
+ questions.forEach((q,i)=>{
+  if(userAnswers[i]===null)empty++;
+  else if(userAnswers[i]===q.correct)right++;
+  else wrong++;
+ });
+ let score=right*10;
+ document.getElementById("rightCount").textContent=right;
+ document.getElementById("wrongCount").textContent=wrong;
+ document.getElementById("emptyCount").textContent=empty;
+ document.getElementById("scoreText").textContent="نمره تو: "+score+" از ۱۰۰";
+ stats.tests++;stats.correct+=right;stats.scores.push(score);
+ localStorage.setItem("geolixStats",JSON.stringify(stats));
+ document.getElementById("review").innerHTML="<h3>پاسخ‌نامه تشریحی</h3>"+
+ questions.map((q,i)=>`
+ <div class="card">
+ <b>سؤال ${i+1}: ${q.question}</b>
+ <p>پاسخ صحیح: <strong>${q.correct}</strong></p>
+ <p class="muted">${q.explanation}</p>
+ <p>${userAnswers[i]===null?"پاسخ ندادی":userAnswers[i]===q.correct?"پاسخ تو درست بود":"پاسخ تو: "+userAnswers[i]}</p>
+ </div>`).join("");
+}
+function showSchedule(){
+ hideAll();document.getElementById("schedule").classList.remove("hidden");
+ document.getElementById("dailyEdit").value=profile.daily;
+ document.getElementById("mathEdit").value=profile.mathTime;
+ document.getElementById("timeEdit").value=profile.startTime;
+ renderSchedule();
+}
+function renderSchedule(){
+ document.getElementById("scheduleText").innerHTML=`
+ <p>مطالعه روزانه: ${profile.daily}</p>
+ <p>مطالعه ریاضی: ${profile.mathTime}</p>
+ <p>شروع ریاضی: ${profile.startTime}</p>`;
+}
+function saveSchedule(){
+ profile.daily=document.getElementById("dailyEdit").value;
+ profile.mathTime=document.getElementById("mathEdit").value;
+ profile.startTime=document.getElementById("timeEdit").value;
+ localStorage.setItem("geolixProfile",JSON.stringify(profile));
+ renderSchedule();alert("برنامه ذخیره شد.");
+}
+function editProfile(){
+ localStorage.removeItem("geolixProfile");
+ location.reload();
+}
+function hideAll(){
+ ["welcome","home","lesson","quiz","result","schedule"].forEach(id=>
+ document.getElementById(id).classList.add("hidden"));
+}
+function goHome(){showHome()}
+
+if(profile)showHome();
+else renderStep();
+</script>
+</body>
+</html>
